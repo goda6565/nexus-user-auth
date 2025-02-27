@@ -7,9 +7,9 @@ import (
 
 	"github.com/goda6565/nexus-user-auth/domain/user/entity"
 	"github.com/goda6565/nexus-user-auth/domain/user/repository"
-	"github.com/goda6565/nexus-user-auth/infrastructure/database/models"
-	"github.com/goda6565/nexus-user-auth/infrastructure/database/adapter"
 	"github.com/goda6565/nexus-user-auth/errs"
+	"github.com/goda6565/nexus-user-auth/infrastructure/database/adapter"
+	"github.com/goda6565/nexus-user-auth/infrastructure/database/models"
 )
 
 type UserRepositoryImpl struct {
@@ -89,9 +89,6 @@ func (r *UserRepositoryImpl) UpdateUser(user *entity.User) (*entity.User, error)
 	}
 	return updatedUser, nil
 }
-
-
-
 
 func (r *UserRepositoryImpl) DeleteUser(objID string) error {
 	tx := r.db.Where("obj_id = ?", objID).Delete(&entity.User{})

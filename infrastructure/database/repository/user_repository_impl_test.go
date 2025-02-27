@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/goda6565/nexus-user-auth/domain/user/repository"
 	"github.com/goda6565/nexus-user-auth/domain/user/entity"
+	"github.com/goda6565/nexus-user-auth/domain/user/repository"
 	"github.com/goda6565/nexus-user-auth/domain/user/value"
 	. "github.com/goda6565/nexus-user-auth/infrastructure/database/repository"
 	"github.com/goda6565/nexus-user-auth/pkg/tester"

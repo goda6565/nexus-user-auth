@@ -3,9 +3,9 @@ package adapter
 import (
 	"time"
 
+	"github.com/goda6565/nexus-user-auth/domain/timeobj"
 	userEntity "github.com/goda6565/nexus-user-auth/domain/user/entity"
 	"github.com/goda6565/nexus-user-auth/domain/user/value"
-	"github.com/goda6565/nexus-user-auth/domain/timeobj"
 	"github.com/goda6565/nexus-user-auth/errs"
 	"github.com/goda6565/nexus-user-auth/infrastructure/database/models"
 )
