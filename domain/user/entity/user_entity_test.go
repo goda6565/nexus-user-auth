@@ -1,4 +1,4 @@
-package model
+package entity
 
 import (
 	"fmt"
@@ -69,12 +69,9 @@ func TestNewUser(t *testing.T) {
 	email := dummyUserEmail()
 	password := dummyUserPassword()
 	username := dummyUserUsername()
-	avatarURL := dummyUserAvatarURL()
-	emailVerifiedAt := dummyTimeObj()
-	lastLoginAt := dummyTimeObj()
 	role := dummyUserRole()
 
-	u, err := NewUser(email, password, username, avatarURL, emailVerifiedAt, lastLoginAt, role)
+	u, err := NewUser(email, password, username)
 	assert.NoError(t, err, "NewUser でエラーが返られないこと")
 	assert.NotNil(t, u, "NewUser で生成されたユーザが nil でないこと")
 	assert.NotNil(t, u.ObjID(), "生成されたユーザの ObjID が nil でないこと")
@@ -82,7 +79,6 @@ func TestNewUser(t *testing.T) {
 	assert.Equal(t, email, u.Email(), "Email が正しくセットされていること")
 	assert.Equal(t, password, u.Password(), "Password が正しくセットされていること")
 	assert.Equal(t, username, u.Username(), "Username が正しくセットされていること")
-	assert.Equal(t, avatarURL, u.AvatarURL(), "AvatarURL が正しくセットされていること")
 	assert.Equal(t, role, u.Role(), "Role が正しくセットされていること")
 }
 
@@ -97,7 +93,7 @@ func TestBuildUser(t *testing.T) {
 	role := dummyUserRole()
 
 	// NewUser を使って一度ユーザを生成し、その ObjID を用いて BuildUser を呼び出す
-	u1, err := NewUser(email, password, username, avatarURL, emailVerifiedAt, lastLoginAt, role)
+	u1, err := NewUser(email, password, username)
 	assert.NoError(t, err)
 
 	u2, err := BuildUser(u1.ObjID(), email, password, username, avatarURL, emailVerifiedAt, lastLoginAt, role)
@@ -116,7 +112,7 @@ func TestUserEquals(t *testing.T) {
 	lastLoginAt := dummyTimeObj()
 	role := dummyUserRole()
 
-	u1, err := NewUser(email, password, username, avatarURL, emailVerifiedAt, lastLoginAt, role)
+	u1, err := NewUser(email, password, username)
 	assert.NoError(t, err)
 	u2, err := BuildUser(u1.ObjID(), email, password, username, avatarURL, emailVerifiedAt, lastLoginAt, role)
 	assert.NoError(t, err)
