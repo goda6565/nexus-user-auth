@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goda6565/nexus-user-auth/domain/timeobj"
 	"github.com/goda6565/nexus-user-auth/domain/user/value"
-	"github.com/goda6565/nexus-user-auth/domain/utils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -55,9 +55,9 @@ func dummyUserRole() *value.UserRole {
 	return role
 }
 
-func dummyTimeObj() *utils.TimeObj {
+func dummyTimeObj() *timeobj.TimeObj {
 	// 現在時刻を元に TimeObj を生成する（エラー処理は panic で簡略化）
-	timeObj, err := utils.NewTimeObj(time.Now())
+	timeObj, err := timeobj.NewTimeObj(time.Now())
 	if err != nil {
 		panic(err)
 	}

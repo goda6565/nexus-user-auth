@@ -1,8 +1,8 @@
 package model
 
 import (
+	"github.com/goda6565/nexus-user-auth/domain/timeobj"
 	"github.com/goda6565/nexus-user-auth/domain/user/value"
-	"github.com/goda6565/nexus-user-auth/domain/utils"
 	"github.com/goda6565/nexus-user-auth/errs"
 	"github.com/google/uuid"
 )
@@ -13,8 +13,8 @@ type User struct {
 	password        *value.UserPassword
 	username        *value.UserUsername
 	avatarURL       *value.UserAvatarURL
-	emailVerifiedAt *utils.TimeObj
-	lastLoginAt     *utils.TimeObj
+	emailVerifiedAt *timeobj.TimeObj
+	lastLoginAt     *timeobj.TimeObj
 	role            *value.UserRole
 }
 
@@ -38,11 +38,11 @@ func (ins *User) AvatarURL() *value.UserAvatarURL {
 	return ins.avatarURL
 }
 
-func (ins *User) EmailVerifiedAt() *utils.TimeObj {
+func (ins *User) EmailVerifiedAt() *timeobj.TimeObj {
 	return ins.emailVerifiedAt
 }
 
-func (ins *User) LastLoginAt() *utils.TimeObj {
+func (ins *User) LastLoginAt() *timeobj.TimeObj {
 	return ins.lastLoginAt
 }
 
@@ -59,7 +59,7 @@ func (ins *User) Equals(obj *User) (bool, error) {
 	return result, nil
 }
 
-func NewUser(email *value.UserEmail, password *value.UserPassword, username *value.UserUsername, avatarURL *value.UserAvatarURL, emailVerifiedAt *utils.TimeObj, lastLoginAt *utils.TimeObj, role *value.UserRole) (*User, error) {
+func NewUser(email *value.UserEmail, password *value.UserPassword, username *value.UserUsername, avatarURL *value.UserAvatarURL, emailVerifiedAt *timeobj.TimeObj, lastLoginAt *timeobj.TimeObj, role *value.UserRole) (*User, error) {
 	if uid, err := uuid.NewRandom(); err != nil { // UUIDを生成する
 		return nil, errs.NewDomainError(err.Error())
 	} else {
@@ -80,7 +80,7 @@ func NewUser(email *value.UserEmail, password *value.UserPassword, username *val
 	}
 }
 
-func BuildUser(objID *value.UserObjID, email *value.UserEmail, password *value.UserPassword, username *value.UserUsername, avatarURL *value.UserAvatarURL, emailVerifiedAt *utils.TimeObj, lastLoginAt *utils.TimeObj, role *value.UserRole) (*User, error) {
+func BuildUser(objID *value.UserObjID, email *value.UserEmail, password *value.UserPassword, username *value.UserUsername, avatarURL *value.UserAvatarURL, emailVerifiedAt *timeobj.TimeObj, lastLoginAt *timeobj.TimeObj, role *value.UserRole) (*User, error) {
 	return &User{
 		objID:           objID,
 		email:           email,
