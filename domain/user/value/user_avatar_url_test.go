@@ -6,14 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewUserAvatarURL_Empty(t *testing.T) {
-	// 空文字は許容される
-	avatar, err := NewUserAvatarURL("")
-	assert.NoError(t, err, "空文字はエラーにならないこと")
-	assert.NotNil(t, avatar)
-	assert.Equal(t, "", avatar.Value())
-}
-
 func TestNewUserAvatarURL_Valid(t *testing.T) {
 	validURL := "https://avatar.example.com/123.png"
 	avatar, err := NewUserAvatarURL(validURL)

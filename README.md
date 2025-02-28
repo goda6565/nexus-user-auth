@@ -1,106 +1,108 @@
-# nexus-user-auth
+# Nexus User Auth
 
-このサービスは、ユーザーの登録、ログイン、プロフィール管理など、認証に関わる機能を提供するREST APIです。GoのGinフレームワークを使用して高速かつシンプルに実装しています。
+**Nexus User Auth** は、DDD（ドメイン駆動設計）に基づいて実装されたユーザー認証およびプロフィール管理サービスです。  
+Go言語を用いて、ユーザー登録、ログイン、JWTを利用したトークンリフレッシュ、ユーザープロフィールの取得・更新・削除などの機能を提供します。
 
-## 主な機能
+## 機能概要
 
-- **ユーザー登録**
-  - 新規ユーザーのアカウント作成（メール形式やパスワード強度のバリデーションを実施）
-- **ログイン**
-  - 登録済みユーザーの認証、成功時にJWTアクセストークンを発行
-- **プロフィール管理**
-  - ユーザー情報の取得・更新（プロフィール画像のアップロードなどオプション対応）
-- **ユーザー情報取得**
-  - 認証済みユーザーの詳細情報を返すAPI
-- **全ユーザー一覧取得**
-  - 管理者向けに全ユーザーの一覧を取得するAPI（ページネーション、フィルタ、ソート対応）
-- **パスワードリセット**
-  - パスワードリセットリクエストと実際のパスワード更新を行うAPI
-- **トークンリフレッシュ**
-  - 既存のJWTトークンを更新し、新しいトークンを発行するAPI
+- **ユーザー登録**  
+  ユーザーの新規登録を行います。  
+  - サービス: `UserRegistrationService`  
+  - エンドポイント例: `POST /api/v1/register`
 
-## インストール手順
+- **ユーザープロフィール管理**  
+  ユーザー情報の取得、更新、削除を行います。  
+  - サービス: `UserProfileService`  
+  - エンドポイント例:
+    - 取得: `GET /api/v1/profile`
+    - 更新: `PUT /api/v1/profile`
+    - 削除: `DELETE /api/v1/profile`  
+    ※ これらのエンドポイントでは、JWTからユーザー情報（objIDなど）を取得するため、URLにユーザーIDを含める必要はありません。
 
-1. **リポジトリのクローン**
-   ```bash
-   git clone https://github.com/goda6565/nexus-user-auth.git
-   cd user-auth-service
-   ```
-2. **依存パッケージのインストール**
-   ```bash
-   go mod download
-   ```
-3. **環境変数の設定**
-   - `.env` ファイルまたは環境変数で以下の項目を設定
-     - `JWT_SECRET`: JWT署名に使用する秘密鍵
-     - `DB_CONNECTION`: データベース接続情報
-4. **サービスの起動**
-   ```bash
-   go run main.go
-   ```
+- **ユーザー認証**  
+  ユーザーログインとトークンリフレッシュの処理を提供します。  
+  - サービス: `UserAuthenticationService`  
+  - エンドポイント例:
+    - ログイン: `POST /api/v1/auth/login`
+    - トークンリフレッシュ: `POST /api/v1/auth/refresh`
 
-## API エンドポイント
+- **JWT管理**  
+  アクセストークンおよびリフレッシュトークンの生成・検証を行います。  
+  - ユーティリティ: `pkg/utils`
 
-### ユーザー登録
-- **URL:** `/api/v1/users/register`
-- **Method:** `POST`
+## プロジェクト構成
 
-### ログイン
-- **URL:** `/api/v1/users/login`
-- **Method:** `POST`
-
-### ユーザー情報取得
-- **URL:** `/api/v1/users/profile`
-- **Method:** `GET`
-- **概要:**
-  - このエンドポイントは、認証済みユーザーの詳細情報を返します。
-  - リクエストヘッダーに有効なJWTトークンを含める必要があります。
-
-### プロフィール更新
-- **URL:** `/api/v1/users/profile`
-- **Method:** `PUT`
-- **概要:**
-  - 認証済みユーザーの情報更新用エンドポイントです。
-
-### 全ユーザー一覧取得 (管理者向け)
-- **URL:** `/api/v1/users`
-- **Method:** `GET`
-- **概要:**
-  - このエンドポイントは、システム内の全ユーザーの一覧を返します。
-  - 管理者のみがアクセスできるよう、厳格な認証と認可が必要です。
-  - クエリパラメータによりページネーション、フィルタリング、ソートが可能です。
-  - 例: `/api/v1/users?page=1&limit=20&sort=username`
-
-### パスワードリセットリクエスト
-- **URL:** `/api/v1/users/password-reset/request`
-- **Method:** `POST`
-- **概要:**
-  - ユーザーがパスワードリセットをリクエストするためのエンドポイントです。
-  - 登録されているメールアドレスにリセット用リンクやトークンを送信します。
-
-### パスワードリセット実行
-- **URL:** `/api/v1/users/password-reset/confirm`
-- **Method:** `POST`
-- **概要:**
-  - パスワードリセットリクエストに基づき、ユーザーが新しいパスワードに更新するエンドポイントです。
-  - リセット用トークンと新しいパスワードを受け取ります。
-
-### トークンリフレッシュ
-- **URL:** `/api/v1/users/refresh`
-- **Method:** `POST`
-- **概要:**
-  - 既存のJWTトークンが有効期限に近づいた際に、新しいトークンを発行するエンドポイントです。
-  - リクエストボディまたはヘッダーに古いトークンを含めます。
-
-## セキュリティ設計
-
-- **JWT トークン:** 各リクエストは、`Authorization` ヘッダーに **Bearer** トークン形式でJWTトークンを含める必要があります。
-- **トークンの格納:** 生成されたJWTトークンは、Bearer方式によりHTTPヘッダーに安全に格納され、適切なセキュリティ対策が施されています。
-- **パスワードハッシュ:** ユーザーパスワードはbcrypt等でハッシュ化して保存。
-- **CORS設定:** フロントエンドとの連携に必要なCORSポリシーの設定。
-
-## 開発・テスト
-
-- **ユニットテスト:** 各APIエンドポイントのロジックに対してテストを実装
-- **統合テスト:** API全体の連携テスト（Postman等のツール利用推奨）
-- **Lint & Code Format:** Goの標準ツール（`go fmt`, `golint`）を利用
+```
+.
+├── Makefile
+├── README.md
+├── api
+├── application
+│   └── service
+│       └── user
+│           ├── authentication
+│           │   ├── user_authentication_service.go
+│           │   └── user_authentication_service_test.go
+│           ├── profile
+│           │   ├── user_profile_service.go
+│           │   └── user_profile_service_test.go
+│           └── registration
+│               ├── user_registration_service.go
+│               └── user_registration_service_test.go
+├── domain
+│   ├── timeobj
+│   │   ├── time_obj.go
+│   │   └── time_obj_test.go
+│   └── user
+│       ├── entity
+│       │   ├── user_entity.go
+│       │   └── user_entity_test.go
+│       ├── repository
+│       │   └── user_repository.go
+│       └── value
+│           ├── user_avatar_url.go
+│           ├── user_avatar_url_test.go
+│           ├── user_email.go
+│           ├── user_email_test.go
+│           ├── user_obj_id.go
+│           ├── user_obj_id_test.go
+│           ├── user_password.go
+│           ├── user_password_test.go
+│           ├── user_role.go
+│           ├── user_role_test.go
+│           ├── user_username.go
+│           └── user_username_test.go
+├── errs
+│   ├── domain.go
+│   ├── infra.go
+│   ├── interface.go
+│   ├── pkg.go
+│   └── service.go
+├── go.mod
+├── go.sum
+├── infrastructure
+│   └── database
+│       ├── adapter
+│       │   └── user_adapter.go
+│       ├── config.go
+│       ├── factory.go
+│       ├── models
+│       │   └── user_model.go
+│       └── repository
+│           ├── user_repository_impl.go
+│           └── user_repository_impl_test.go
+├── interface
+├── main.go
+└── pkg
+    ├── logger
+    │   └── logger.go
+    ├── tester
+    │   └── sqlite_suite.go
+    └── utils
+        ├── env.go
+        ├── env_test.go
+        ├── jwt.go
+        ├── jwt_test.go
+        ├── password.go
+        └── password_test.go
+```
