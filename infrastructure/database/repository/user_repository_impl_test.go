@@ -10,6 +10,7 @@ import (
 	"github.com/goda6565/nexus-user-auth/domain/user/value"
 	. "github.com/goda6565/nexus-user-auth/infrastructure/database/repository"
 	"github.com/goda6565/nexus-user-auth/pkg/tester"
+	"github.com/goda6565/nexus-user-auth/pkg/utils"
 )
 
 type UserRepositoryImplTestSuite struct {
@@ -45,6 +46,8 @@ func (suite *UserRepositoryImplTestSuite) TestCreateUser() {
 	suite.NotNil(createdUser, "作成されたユーザーがnilであってはならない")
 	suite.NotEmpty(createdUser.ObjID().Value(), "自動生成されたユーザーIDが空であってはならない")
 	suite.Equal("test@example.com", createdUser.Email().Value(), "メールアドレスが期待通りであること")
+	suite.Equal("testuser", createdUser.Username().Value(), "ユーザー名が期待通りであること")
+	suite.NoError(utils.CheckPassword(createdUser.Password().Value(), "Password123!"), "パスワードが期待通りであること")
 }
 
 func (suite *UserRepositoryImplTestSuite) TestGetUserByEmail() {
@@ -67,6 +70,9 @@ func (suite *UserRepositoryImplTestSuite) TestGetUserByEmail() {
 	suite.NoError(err)
 	suite.NotNil(foundUser)
 	suite.Equal(createdUser.ObjID().Value(), foundUser.ObjID().Value(), "取得したユーザーIDが一致すること")
+	suite.Equal(createdUser.Email().Value(), foundUser.Email().Value(), "取得したユーザーのメールが一致すること")
+	suite.Equal(createdUser.Username().Value(), foundUser.Username().Value(), "取得したユーザー名が一致すること")
+	suite.NoError(utils.CheckPassword(foundUser.Password().Value(), "Password123!"), "取得したユーザーのパスワードが一致すること")
 }
 
 func (suite *UserRepositoryImplTestSuite) TestGetUserByObjID() {
@@ -88,7 +94,10 @@ func (suite *UserRepositoryImplTestSuite) TestGetUserByObjID() {
 	foundUser, err := suite.userRepo.GetUserByObjID(createdUser.ObjID().Value())
 	suite.NoError(err)
 	suite.NotNil(foundUser)
+	suite.Equal(createdUser.ObjID().Value(), foundUser.ObjID().Value(), "取得したユーザーIDが一致すること")
 	suite.Equal(createdUser.Email().Value(), foundUser.Email().Value(), "取得したユーザーのメールが一致すること")
+	suite.Equal(createdUser.Username().Value(), foundUser.Username().Value(), "取得したユーザー名が一致すること")
+	suite.NoError(utils.CheckPassword(foundUser.Password().Value(), "Password123!"), "取得したユーザーのパスワードが一致すること")
 }
 
 func (suite *UserRepositoryImplTestSuite) TestUpdateUser() {
@@ -127,6 +136,9 @@ func (suite *UserRepositoryImplTestSuite) TestUpdateUser() {
 	suite.NoError(err)
 	suite.NotNil(resultUser)
 	suite.Equal("updateduser", resultUser.Username().Value(), "更新後のユーザー名が期待通りであること")
+	suite.Equal(createdUser.ObjID().Value(), resultUser.ObjID().Value(), "更新後のユーザーIDが一致すること")
+	suite.Equal(createdUser.Email().Value(), resultUser.Email().Value(), "更新後のユーザーのメールが一致すること")
+	suite.NoError(utils.CheckPassword(resultUser.Password().Value(), "Password123!"), "更新後のユーザーのパスワードが一致すること")
 }
 
 func (suite *UserRepositoryImplTestSuite) TestDeleteUser() {

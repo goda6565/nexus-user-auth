@@ -50,6 +50,14 @@ func (ins *User) Role() *value.UserRole {
 	return ins.role
 }
 
+func (ins *User) ChangeUsername(newUsername *value.UserUsername) {
+	ins.username = newUsername
+}
+
+func (ins *User) ChangeAvatarURL(newAvatarURL *value.UserAvatarURL) {
+	ins.avatarURL = newAvatarURL
+}
+
 // 同一性の確認
 func (ins *User) Equals(obj *User) (bool, error) {
 	if obj == nil {

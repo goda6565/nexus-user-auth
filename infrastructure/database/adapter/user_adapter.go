@@ -67,10 +67,6 @@ func (a *userAdapterImpl) ReBuild(source any) (*userEntity.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	password, err := value.NewUserPassword(userModel.Password)
-	if err != nil {
-		return nil, err
-	}
 	username, err := value.NewUserUsername(userModel.Username)
 	if err != nil {
 		return nil, err
@@ -107,5 +103,5 @@ func (a *userAdapterImpl) ReBuild(source any) (*userEntity.User, error) {
 	}
 
 	// BuildUser は、既存データからドメインエンティティを再構築するためのファクトリ関数です。
-	return userEntity.BuildUser(objID, email, password, username, avatarURL, emailVerifiedAt, lastLoginAt, role)
+	return userEntity.BuildUser(objID, email, value.FromHashed(userModel.Password), username, avatarURL, emailVerifiedAt, lastLoginAt, role)
 }
