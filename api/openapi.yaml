@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: Go Auth API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+  - url: http://0.0.0.0:8080/api/v1
+  - url: http://127.0.0.1:8080/api/v1
+paths:
+  /auth/register:
+    post:
+      summary: ユーザー登録
+      operationId: userRegister
+      requestBody:
+        $ref: '#/components/requestBodies/UserRegisterRequestBody'
+        required: true
+      responses:
+        '201':
+          $ref: '#/components/responses/RegisterResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/login:
+    post:
+      summary: ログイン
+      operationId: userLogin
+      requestBody:
+        $ref: '#/components/requestBodies/UserLoginRequestBody'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/refresh:
+    post:
+      summary: トークンリフレッシュ
+      operationId: userTokenRefresh
+      requestBody:
+        $ref: '#/components/requestBodies/TokenRefreshRequestBody'
+        required: true
+      responses:
+        '200': 
+          $ref: '#/components/responses/TokenRefreshResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /profile:
+    get:
+      summary: ユーザープロフィールの取得
+      operationId: getUserProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      summary: ユーザープロフィールの更新
+      operationId: updateUserProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/UserProfileUpdateRequestBody'
+        required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+    delete:
+      summary: ユーザープロフィールの削除
+      operationId: deleteUserProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: ユーザープロフィールの削除成功
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UserRegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        username:
+          type: string
+      required:
+        - email
+        - password
+        - username
+    UserLoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+        - refreshToken
+    UserProfileUpdateRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        avatarURL:
+          type: string
+      required:
+        - username
+  requestBodies:
+    UserRegisterRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRegisterRequest'
+    UserLoginRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserLoginRequest'
+    TokenRefreshRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TokenRefreshRequest'
+    UserProfileUpdateRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserProfileUpdateRequest'
+  responses:
+    RegisterResponse:
+      description: ユーザー登録成功
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uid:
+                type: string
+              email:
+                type: string
+              username:
+                type: string
+            required:
+              - uid
+              - email
+              - username
+    LoginResponse:
+      description: ログイン成功
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              accessToken:
+                type: string
+              refreshToken:
+                type: string
+            required:
+              - accessToken
+              - refreshToken
+    ProfileResponse:
+      description: ユーザープロフィール情報
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uid:
+                type: string
+              email:
+                type: string
+              username:
+                type: string
+              avatarURL:
+                type: string
+            required:
+              - uid
+              - email
+              - username
+    TokenRefreshResponse:
+      description: トークンリフレッシュ成功
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              accessToken:
+                type: string
+            required:
+              - accessToken
+    ErrorResponse:
+      description: エラーレスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              code:
+                type: integer
+            required:
+              - message
+              - code
