@@ -1,4 +1,4 @@
-package user
+package registration
 
 import (
 	"net/http"
