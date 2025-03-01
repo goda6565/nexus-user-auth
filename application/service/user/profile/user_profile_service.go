@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"fmt"
+
 	"github.com/goda6565/nexus-user-auth/domain/user/entity"
 	"github.com/goda6565/nexus-user-auth/domain/user/repository"
 	"github.com/goda6565/nexus-user-auth/domain/user/value"
@@ -43,6 +45,7 @@ func (s *userProfileService) UserUpdate(objID string, username string, avatarURL
 	}
 
 	// ユーザー名の更新
+	fmt.Println("username: ", username) 
 	newUsername, err := value.NewUserUsername(username)
 	if err != nil {
 		return nil, errs.NewServiceError("failed to create user username")

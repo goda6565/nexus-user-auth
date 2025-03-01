@@ -37,6 +37,8 @@ Go言語を用いて、ユーザー登録、ログイン、JWTを利用したト
 ├── Makefile
 ├── README.md
 ├── api
+│   ├── config.yaml
+│   └── openapi.yaml
 ├── application
 │   └── service
 │       └── user
@@ -49,6 +51,8 @@ Go言語を用いて、ユーザー登録、ログイン、JWTを利用したト
 │           └── registration
 │               ├── user_registration_service.go
 │               └── user_registration_service_test.go
+├── atlas.hcl
+├── docker-compose.yaml
 ├── domain
 │   ├── timeobj
 │   │   ├── time_obj.go
@@ -81,18 +85,49 @@ Go言語を用いて、ユーザー登録、ログイン、JWTを利用したト
 ├── go.mod
 ├── go.sum
 ├── infrastructure
-│   └── database
-│       ├── adapter
-│       │   └── user_adapter.go
+│   ├── database
+│   │   ├── adapter
+│   │   │   └── user_adapter.go
+│   │   ├── config.go
+│   │   ├── factory.go
+│   │   ├── models
+│   │   │   └── user_model.go
+│   │   └── repository
+│   │       ├── user_repository_impl.go
+│   │       └── user_repository_impl_test.go
+│   └── web
 │       ├── config.go
 │       ├── factory.go
-│       ├── models
-│       │   └── user_model.go
-│       └── repository
-│           ├── user_repository_impl.go
-│           └── user_repository_impl_test.go
+│       └── gin.go
 ├── interface
+│   ├── gen
+│   │   └── api.go
+│   ├── handler
+│   │   ├── health.go
+│   │   ├── health_test.go
+│   │   └── user
+│   │       ├── authentication
+│   │       │   ├── user_authentication_handler.go
+│   │       │   └── user_authentication_handler_test.go
+│   │       ├── profile
+│   │       │   ├── user_profile_handler.go
+│   │       │   └── user_profile_handler_test.go
+│   │       └── registration
+│   │           ├── user_registration_handler.go
+│   │           └── user_registration_handler_test.go
+│   ├── keys
+│   │   └── keys.go
+│   ├── middleware
+│   │   ├── auth.go
+│   │   ├── cors.go
+│   │   ├── logger.go
+│   │   └── timeout.go
+│   └── router
+│       └── router.go
 ├── main.go
+├── migrations
+│   ├── 20250301140523.sql
+│   └── atlas.sum
 └── pkg
     ├── logger
     │   └── logger.go
