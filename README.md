@@ -1,5 +1,7 @@
 # Nexus User Auth
 
+[![Go CI](https://github.com/goda6565/nexus-user-auth/actions/workflows/ci.yaml/badge.svg)](https://github.com/goda6565/nexus-user-auth/actions/workflows/ci.yaml)
+
 **Nexus User Auth** は、DDD（ドメイン駆動設計）に基づいて実装されたユーザー認証およびプロフィール管理サービスです。  
 Go言語を用いて、ユーザー登録、ログイン、JWTを利用したトークンリフレッシュ、ユーザープロフィールの取得・更新・削除などの機能を提供します。
 
