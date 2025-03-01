@@ -15,7 +15,7 @@ import (
 	"github.com/goda6565/nexus-user-auth/domain/user/entity"
 	"github.com/goda6565/nexus-user-auth/domain/user/value"
 	"github.com/goda6565/nexus-user-auth/interface/gen"
-	. "github.com/goda6565/nexus-user-auth/interface/handler/user/profile"
+	profileHandler "github.com/goda6565/nexus-user-auth/interface/handler/user/profile"
 )
 
 // --- モックの UserProfileService ---
@@ -44,9 +44,9 @@ func (m *mockUserProfileService) UserDelete(id string) error {
 	return args.Error(0)
 }
 
-// --- テスト用ユーティリティ ---
-// ユーザーIDは entity.NewUser で自動生成されるため、生成後に fakeUser.ObjID().Value() で取得します。
-// AvatarURL は値が存在する場合、ChangeAvatarURL 経由で設定します（実装に合わせてください）。
+// --- ユーティリティ関数 ---
+// テスト用のユーザーを生成します。
+// AvatarURL は値が存在する場合、ChangeAvatarURL 経由で設定します。
 func createFakeUser(emailStr, usernameStr, avatar string) *entity.User {
 	email, _ := value.NewUserEmail(emailStr)
 	password, _ := value.NewUserPassword("dummy") // テスト用ダミー
@@ -62,14 +62,14 @@ func createFakeUser(emailStr, usernameStr, avatar string) *entity.User {
 // --- テストスイート ---
 type UserProfileHandlerTestSuite struct {
 	suite.Suite
-	handler     *UserProfileHandler
+	handler     *profileHandler.UserProfileHandler
 	mockService *mockUserProfileService
 }
 
 func (suite *UserProfileHandlerTestSuite) SetupTest() {
 	gin.SetMode(gin.TestMode)
 	suite.mockService = new(mockUserProfileService)
-	suite.handler = NewUserProfileHandler(suite.mockService)
+	suite.handler = profileHandler.NewUserProfileHandler(suite.mockService)
 }
 
 // ----- GetUserProfile のテスト -----
@@ -79,33 +79,29 @@ func (suite *UserProfileHandlerTestSuite) TestGetUserProfile_NoAvatar() {
 	fakeUser := createFakeUser("test@example.com", "username", "")
 	userID := fakeUser.ObjID().Value()
 
-	// モックで、指定されたuidに対して生成したユーザーを返すよう設定
+	// モックの設定
 	suite.mockService.
 		On("UserGet", userID).
 		Return(fakeUser, nil)
 
-	// テスト用のGinコンテキストを作成し、パラメータを設定
+	// テスト用の Gin コンテキストを作成
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 
-	// ハンドラーの GetUserProfile を呼び出す
+	// ハンドラー実行
 	suite.handler.GetUserProfile(c)
 
-	// HTTPステータスコードの検証
 	suite.Equal(http.StatusOK, w.Code)
 
-	// レスポンスボディをデコードし、各フィールドが期待通りになっているか検証
 	var resp gen.ProfileResponse
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	suite.Require().NoError(err)
 	suite.Equal(userID, resp.Uid)
 	suite.Equal("test@example.com", resp.Email)
 	suite.Equal("username", resp.Username)
-	// AvatarURL が空の場合は、レスポンスでは nil となるはず
 	suite.Nil(resp.AvatarURL)
 
-	// モックの期待通り呼び出されたかを検証
 	suite.mockService.AssertExpectations(suite.T())
 }
 
@@ -121,7 +117,7 @@ func (suite *UserProfileHandlerTestSuite) TestGetUserProfile_WithAvatar() {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 
 	suite.handler.GetUserProfile(c)
 
@@ -140,7 +136,7 @@ func (suite *UserProfileHandlerTestSuite) TestGetUserProfile_WithAvatar() {
 
 // エラー系: サービス側でエラー発生
 func (suite *UserProfileHandlerTestSuite) TestGetUserProfile_ServiceError() {
-	userID := "789" // この値はモックの期待値として利用します
+	userID := "789"
 	serviceErr := errors.New("user not found")
 	suite.mockService.
 		On("UserGet", userID).
@@ -148,7 +144,7 @@ func (suite *UserProfileHandlerTestSuite) TestGetUserProfile_ServiceError() {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 
 	suite.handler.GetUserProfile(c)
 
@@ -171,7 +167,7 @@ func (suite *UserProfileHandlerTestSuite) TestUpdateUserProfile_InvalidJSON() {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 	c.Request = req
 
 	suite.handler.UpdateUserProfile(c)
@@ -198,12 +194,12 @@ func (suite *UserProfileHandlerTestSuite) TestUpdateUserProfile_ServiceError() {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 	c.Request = req
 
 	serviceErr := errors.New("update failed")
 	suite.mockService.
-		On("UserUpdate", userID, *reqBody.AvatarURL, reqBody.Username).
+		On("UserUpdate", userID, reqBody.Username, *reqBody.AvatarURL).
 		Return(nil, serviceErr)
 
 	suite.handler.UpdateUserProfile(c)
@@ -220,7 +216,6 @@ func (suite *UserProfileHandlerTestSuite) TestUpdateUserProfile_ServiceError() {
 
 // 正常系: ユーザー情報更新成功
 func (suite *UserProfileHandlerTestSuite) TestUpdateUserProfile_Success() {
-	// サービス側が返す fakeUser の uid を利用する
 	fakeUser := createFakeUser("test@example.com", "newusername", "https://example.com/newavatar.png")
 	userID := fakeUser.ObjID().Value()
 
@@ -235,12 +230,11 @@ func (suite *UserProfileHandlerTestSuite) TestUpdateUserProfile_Success() {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	// コンテキストの uid として、fakeUser の uid を設定
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 	c.Request = req
 
 	suite.mockService.
-		On("UserUpdate", userID, *reqBody.AvatarURL, reqBody.Username).
+		On("UserUpdate", userID, reqBody.Username, *reqBody.AvatarURL).
 		Return(fakeUser, nil)
 
 	suite.handler.UpdateUserProfile(c)
@@ -270,7 +264,7 @@ func (suite *UserProfileHandlerTestSuite) TestDeleteUserProfile_ServiceError() {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 
 	suite.handler.DeleteUserProfile(c)
 
@@ -293,13 +287,13 @@ func (suite *UserProfileHandlerTestSuite) TestDeleteUserProfile_Success() {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = []gin.Param{{Key: "validated_uid", Value: userID}}
+	c.Set("validated_uid", userID)
 
 	suite.handler.DeleteUserProfile(c)
 
 	suite.Equal(http.StatusOK, w.Code)
-	// レスポンスボディが nil または空であることを検証
-	suite.Empty(w.Body)
+	// レスポンスボディが空であることを検証
+	suite.Empty(w.Body.Bytes())
 
 	suite.mockService.AssertExpectations(suite.T())
 }

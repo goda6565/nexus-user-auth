@@ -137,5 +137,5 @@ func (h *UserProfileHandler) DeleteUserProfile(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	c.Status(http.StatusOK)
 }
